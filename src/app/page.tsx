@@ -1,42 +1,32 @@
 "use client";
 
 import "./globals.css";
-
 import { default as GraphemeSplitter } from "grapheme-splitter";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { HiOutlineClock } from "react-icons/hi";
 import { AlertContainer } from "../components/alerts/AlertContainer";
 import { Grid } from "../components/grid/Grid";
 import { Keyboard } from "../components/keyboard/Keyboard";
 import { InfoModal } from "../components/modals/InfoModal";
-import { SettingsModal } from "../components/modals/SettingsModal";
 import { StatsModal } from "../components/modals/StatsModal";
 import { Navbar } from "../components/navbar/Navbar";
 import {
-  DATE_LOCALE,
   MAX_CHALLENGES,
   REVEAL_TIME_MS,
   WELCOME_INFO_MODAL_MS,
 } from "../globals/constants/settings";
 import {
   CORRECT_WORD_MESSAGE,
-  HARD_MODE_ALERT_MESSAGE,
   NOT_ENOUGH_LETTERS_MESSAGE,
   WIN_MESSAGES,
   WORD_NOT_FOUND_MESSAGE,
 } from "../globals/constants/strings";
 import { useAlert } from "../context/AlertContext";
 import {
-  getStoredIsHighContrastMode,
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
-  setStoredIsHighContrastMode,
 } from "../utils/localStorage";
 import { addStatsForCompletedGame, loadStats } from "../utils/stats";
 import {
-  findFirstUnusedReveal,
-  getGameDate,
   getIsLatestGame,
   isWinningWord,
   isWordInWordList,
@@ -46,11 +36,9 @@ import {
 
 const App = () => {
   const isLatestGame = getIsLatestGame();
-  const gameDate = getGameDate();
-  const prefersDarkMode =
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-      : false;
+  const prefersDarkMode = window.matchMedia(
+    "(prefers-color-scheme: dark)"
+  ).matches;
 
   const { showError: showErrorAlert, showSuccess: showSuccessAlert } =
     useAlert();
@@ -58,18 +46,12 @@ const App = () => {
   const [isGameWon, setIsGameWon] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [currentRowClass, setCurrentRowClass] = useState("");
   const [isGameLost, setIsGameLost] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
-    typeof window !== "undefined" && localStorage.getItem("theme")
+    localStorage.getItem("theme")
       ? localStorage.getItem("theme") === "dark"
-      : prefersDarkMode
-      ? true
-      : false
-  );
-  const [isHighContrastMode, setIsHighContrastMode] = useState(
-    getStoredIsHighContrastMode()
+      : !!prefersDarkMode
   );
   const [isRevealing, setIsRevealing] = useState(false);
   const [guesses, setGuesses] = useState<string[]>(() => {
@@ -92,12 +74,6 @@ const App = () => {
 
   const [stats, setStats] = useState(() => loadStats());
 
-  const [isHardMode, setIsHardMode] = useState(
-    typeof window !== "undefined" && localStorage.getItem("gameMode")
-      ? localStorage.getItem("gameMode") === "hard"
-      : false
-  );
-
   useEffect(() => {
     if (!loadGameStateFromLocalStorage(true)) {
       setTimeout(() => {
@@ -112,36 +88,12 @@ const App = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-
-    if (isHighContrastMode) {
-      document.documentElement.classList.add("high-contrast");
-    } else {
-      document.documentElement.classList.remove("high-contrast");
-    }
-  }, [isDarkMode, isHighContrastMode]);
+  }, [isDarkMode]);
 
   const handleDarkMode = (isDark: boolean) => {
     setIsDarkMode(isDark);
     typeof window !== "undefined" &&
       localStorage.setItem("theme", isDark ? "dark" : "light");
-  };
-
-  const handleHardMode = (isHard: boolean) => {
-    if (
-      guesses.length === 0 ||
-      (typeof window !== "undefined" &&
-        localStorage.getItem("gameMode") === "hard")
-    ) {
-      setIsHardMode(isHard);
-      localStorage.setItem("gameMode", isHard ? "hard" : "normal");
-    } else {
-      showErrorAlert(HARD_MODE_ALERT_MESSAGE);
-    }
-  };
-
-  const handleHighContrastMode = (isHighContrast: boolean) => {
-    setIsHighContrastMode(isHighContrast);
-    setStoredIsHighContrastMode(isHighContrast);
   };
 
   const clearCurrentRowClass = () => {
@@ -206,16 +158,6 @@ const App = () => {
       });
     }
 
-    if (isHardMode) {
-      const firstMissingReveal = findFirstUnusedReveal(currentGuess, guesses);
-      if (firstMissingReveal) {
-        setCurrentRowClass("jiggle");
-        return showErrorAlert(firstMissingReveal, {
-          onClose: clearCurrentRowClass,
-        });
-      }
-    }
-
     setIsRevealing(true);
     setTimeout(() => {
       setIsRevealing(false);
@@ -252,21 +194,13 @@ const App = () => {
   };
 
   return (
-    <div className="flex w-full h-screen flex-col">
+    <div className="flex w-full h-screen flex-col justify-center items-center">
       <Navbar
+        enabled={isDarkMode}
+        onToggle={handleDarkMode}
         setIsInfoModalOpen={setIsInfoModalOpen}
         setIsStatsModalOpen={setIsStatsModalOpen}
-        setIsSettingsModalOpen={setIsSettingsModalOpen}
       />
-
-      {!isLatestGame && (
-        <div className="flex items-center justify-center">
-          <HiOutlineClock className="h-6 w-6 stroke-gray-600 dark:stroke-gray-300" />
-          <p className="text-base text-gray-600 dark:text-gray-300">
-            {format(gameDate, "d MMMM yyyy", { locale: DATE_LOCALE })}
-          </p>
-        </div>
-      )}
 
       <div className="mx-auto flex w-full grow flex-col px-1 pt-2 pb-8 sm:px-6 md:max-w-7xl lg:px-8 short:pb-2 short:pt-2">
         <div className="flex grow flex-col justify-center pb-6 short:pb-2">
@@ -299,20 +233,8 @@ const App = () => {
           isLatestGame={isLatestGame}
           isGameLost={isGameLost}
           isGameWon={isGameWon}
-          isHardMode={isHardMode}
           isDarkMode={isDarkMode}
-          isHighContrastMode={isHighContrastMode}
           numberOfGuessesMade={guesses.length}
-        />
-        <SettingsModal
-          isOpen={isSettingsModalOpen}
-          handleClose={() => setIsSettingsModalOpen(false)}
-          isHardMode={isHardMode}
-          handleHardMode={handleHardMode}
-          isDarkMode={isDarkMode}
-          handleDarkMode={handleDarkMode}
-          isHighContrastMode={isHighContrastMode}
-          handleHighContrastMode={handleHighContrastMode}
         />
         <AlertContainer />
       </div>

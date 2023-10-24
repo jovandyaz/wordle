@@ -20,9 +20,7 @@ interface StatsModalProps {
   isLatestGame: boolean;
   isGameLost: boolean;
   isGameWon: boolean;
-  isHardMode: boolean;
   isDarkMode: boolean;
-  isHighContrastMode: boolean;
   numberOfGuessesMade: number;
 }
 

@@ -55,7 +55,7 @@ export const AlertProvider = ({ children }: AlertProviderProps) => {
         persist,
         onClose,
         durationMs = ALERT_TIME_MS,
-      } = options || {};
+      } = options ?? {};
 
       setTimeout(() => {
         setStatus(showStatus);
