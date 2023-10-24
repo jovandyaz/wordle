@@ -1,12 +1,15 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
+import type { Metadata } from "next";
+import { Roboto } from "next/font/google";
 import { AlertProvider } from "@/context/AlertContext";
 
-const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: "400",
+});
 
 export const metadata: Metadata = {
-  title: "Palabradeldia",
+  title: "Wordle ES",
   description: "Wordle ES app",
 };
 
@@ -17,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={roboto.className}>
         <AlertProvider>{children}</AlertProvider>
       </body>
     </html>

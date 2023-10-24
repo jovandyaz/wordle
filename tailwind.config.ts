@@ -10,9 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        "dark-mode": "url('/src/assets/dark-mode-toggle.svg')",
+        "light-mode": "url('/src/assets/light-mode-toggle.svg')",
       },
     },
   },

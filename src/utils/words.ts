@@ -124,6 +124,7 @@ export const getGameDate = () => {
     return getToday();
   }
 
+  if (typeof window === "undefined") return getToday();
   const parsed = queryString.parse(window.location.search);
   try {
     const d = startOfDay(parseISO(parsed.d!.toString()));
@@ -150,12 +151,9 @@ export const setGameDate = (d: Date) => {
 };
 
 export const getIsLatestGame = () => {
-  if (typeof window !== "undefined") {
-    const parsed = queryString.parse(window.location.search);
-    return !parsed || !parsed.d;
-  } else {
-    return true;
-  }
+  if (typeof window === "undefined") return false;
+  const parsed = queryString.parse(window.location.search);
+  return !parsed || !parsed.d;
 };
 
 export const { solution, solutionGameDate, solutionIndex, tomorrow } =
