@@ -9,7 +9,9 @@ import { GameStats } from "../../utils/localStorage";
 import { Histogram } from "../stats/Histogram";
 import { StatBar } from "../stats/StatBar";
 import { BaseModal } from "./BaseModal";
-import { tomorrow } from "@/utils/words";
+import { startedTime } from "@/utils/words";
+import { LIMIT_TIME_MS } from "@/globals/constants/settings";
+import { formattedTime } from "@/utils/dateutils";
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -68,7 +70,10 @@ export const StatsModal = ({
                 <h5>{NEW_WORD_TEXT}</h5>
                 <Countdown
                   className="text-lg font-medium text-gray-900 dark:text-gray-100"
-                  date={tomorrow}
+                  date={startedTime + LIMIT_TIME_MS}
+                  renderer={({ days, hours, minutes, seconds }) =>
+                    formattedTime({ days, hours, minutes, seconds })
+                  }
                   daysInHours={true}
                 />
               </div>

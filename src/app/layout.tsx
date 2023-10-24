@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { AlertProvider } from "@/context/AlertContext";
+import { Analytics } from "@vercel/analytics/react";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -21,7 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
-        <AlertProvider>{children}</AlertProvider>
+        <AlertProvider>
+          {children}
+          <Analytics />
+        </AlertProvider>
       </body>
     </html>
   );

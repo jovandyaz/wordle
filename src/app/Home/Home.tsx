@@ -2,13 +2,16 @@
 
 import { default as GraphemeSplitter } from "grapheme-splitter";
 import { useEffect, useState } from "react";
+import Countdown from "react-countdown";
 import { AlertContainer } from "../../components/alerts/AlertContainer";
 import { Grid } from "../../components/grid/Grid";
 import { Keyboard } from "../../components/keyboard/Keyboard";
 import { InfoModal } from "../../components/modals/InfoModal";
 import { StatsModal } from "../../components/modals/StatsModal";
 import { Navbar } from "../../components/navbar/Navbar";
+import { HiOutlineClock } from "react-icons/hi2";
 import {
+  LIMIT_TIME_MS,
   MAX_CHALLENGES,
   REVEAL_TIME_MS,
   WELCOME_INFO_MODAL_MS,
@@ -30,9 +33,11 @@ import {
   isWinningWord,
   isWordInWordList,
   solution,
+  startedTime,
   unicodeLength,
 } from "../../utils/words";
 import { localStorageFns } from "@/utils/localStorageFns";
+import { formattedTime } from "@/utils/dateutils";
 
 export const Home = () => {
   const isLatestGame = getIsLatestGame();
@@ -71,36 +76,6 @@ export const Home = () => {
 
   const [stats, setStats] = useState(() => loadStats());
 
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setPrefersDarkMode(darkModeQuery.matches);
-
-    const handleChange = (e: MediaQueryListEvent) => {
-      setPrefersDarkMode(e.matches);
-    };
-    darkModeQuery.addEventListener("change", handleChange);
-
-    return () => {
-      darkModeQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!loadGameStateFromLocalStorage(true)) {
-      setTimeout(() => {
-        setIsInfoModalOpen(true);
-      }, WELCOME_INFO_MODAL_MS);
-    }
-  });
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDarkMode]);
-
   const handleDarkMode = (isDark: boolean) => {
     setIsDarkMode(isDark);
     localStorageFns.set("theme", isDark ? "dark" : "light");
@@ -109,29 +84,6 @@ export const Home = () => {
   const clearCurrentRowClass = () => {
     setCurrentRowClass("");
   };
-
-  useEffect(() => {
-    saveGameStateToLocalStorage(getIsLatestGame(), { guesses, solution });
-  }, [guesses]);
-
-  useEffect(() => {
-    if (isGameWon) {
-      const winMessage =
-        WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)];
-      const delayMs = REVEAL_TIME_MS * solution.length;
-
-      showSuccessAlert(winMessage, {
-        delayMs,
-        onClose: () => setIsStatsModalOpen(true),
-      });
-    }
-
-    if (isGameLost) {
-      setTimeout(() => {
-        setIsStatsModalOpen(true);
-      }, (solution.length + 1) * REVEAL_TIME_MS);
-    }
-  }, [isGameWon, isGameLost, showSuccessAlert]);
 
   const onChar = (value: string) => {
     if (
@@ -203,6 +155,65 @@ export const Home = () => {
     }
   };
 
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setPrefersDarkMode(darkModeQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersDarkMode(e.matches);
+    };
+    darkModeQuery.addEventListener("change", handleChange);
+
+    return () => {
+      darkModeQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (!loadGameStateFromLocalStorage(true)) {
+      setTimeout(() => {
+        setIsInfoModalOpen(true);
+      }, WELCOME_INFO_MODAL_MS);
+    }
+  });
+
+  useEffect(() => {
+    setTimeout(() => {
+      window.location.reload();
+    }, LIMIT_TIME_MS);
+  });
+
+  useEffect(() => {
+    saveGameStateToLocalStorage(getIsLatestGame(), { guesses, solution });
+  }, [guesses]);
+
+  useEffect(() => {
+    if (isGameWon) {
+      const winMessage =
+        WIN_MESSAGES[Math.floor(Math.random() * WIN_MESSAGES.length)];
+      const delayMs = REVEAL_TIME_MS * solution.length;
+
+      showSuccessAlert(winMessage, {
+        delayMs,
+        onClose: () => setIsStatsModalOpen(true),
+      });
+    }
+
+    if (isGameLost) {
+      setTimeout(() => {
+        setIsStatsModalOpen(true);
+      }, (solution.length + 1) * REVEAL_TIME_MS);
+    }
+  }, [isGameWon, isGameLost, showSuccessAlert]);
+
   return (
     <div className="flex w-full h-screen flex-col justify-center items-center">
       <Navbar
@@ -211,6 +222,24 @@ export const Home = () => {
         setIsInfoModalOpen={setIsInfoModalOpen}
         setIsStatsModalOpen={setIsStatsModalOpen}
       />
+
+      {!isStatsModalOpen && (
+        <div className="flex items-center justify-center">
+          <HiOutlineClock className="h-6 w-6 stroke-gray-600 dark:stroke-gray-300" />
+          <p className="text-base text-gray-600 dark:text-gray-300">
+            {
+              <Countdown
+                className="text-base text-gray-600 dark:text-gray-300"
+                date={startedTime + LIMIT_TIME_MS}
+                renderer={({ days, hours, minutes, seconds }) =>
+                  formattedTime({ days, hours, minutes, seconds })
+                }
+                daysInHours={true}
+              />
+            }
+          </p>
+        </div>
+      )}
 
       <div className="mx-auto flex w-full grow flex-col px-1 pt-2 pb-8 sm:px-6 md:max-w-7xl lg:px-8 short:pb-2 short:pt-2">
         <div className="flex grow flex-col justify-center pb-6 short:pb-2">

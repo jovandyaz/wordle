@@ -27,14 +27,14 @@ export const loadGameStateFromLocalStorage = (isLatestGame: boolean) => {
 
 const gameStatKey = "gameStats";
 
-export type GameStats = {
+export interface GameStats {
   winDistribution: number[];
   gamesFailed: number;
   currentStreak: number;
   bestStreak: number;
   totalGames: number;
   successRate: number;
-};
+}
 
 export const saveStatsToLocalStorage = (gameStats: GameStats) => {
   if (typeof window === "undefined") {

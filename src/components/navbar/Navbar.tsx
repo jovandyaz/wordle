@@ -21,13 +21,13 @@ export const Navbar = ({
   return (
     <div className="navbar w-8/12 mt-16 mx-8 bg-gray-100 dark:bg-slate-800 rounded-xl">
       <div className="navbar-content px-5 short:h-auto">
-        <div className="flex">
+        <div className="flex pr-8">
           <HiOutlineInformationCircle
             className="h-6 w-6 cursor-pointer dark:stroke-white"
             onClick={() => setIsInfoModalOpen(true)}
           />
         </div>
-        <p className="text-xl font-bold dark:text-white">{GAME_TITLE}</p>
+        <p className="text-4xl font-bold dark:text-white">{GAME_TITLE}</p>
         <div className="right-icons">
           <HiOutlineChartBar
             className="mr-3 h-6 w-6 cursor-pointer dark:stroke-white"
